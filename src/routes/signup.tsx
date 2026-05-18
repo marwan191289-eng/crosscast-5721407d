@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import { useAuth } from "@/lib/auth";
 import logo from "@/assets/logo.png";
 
 export const Route = createFileRoute("/signup")({
@@ -16,10 +17,15 @@ export const Route = createFileRoute("/signup")({
 
 function SignupPage() {
   const nav = useNavigate();
+  const { user } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (user) nav({ to: "/dashboard" });
+  }, [user, nav]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +46,7 @@ function SignupPage() {
   };
 
   const oauth = async (provider: "google" | "apple") => {
-    const res = await lovable.auth.signInWithOAuth(provider, { redirect_uri: window.location.origin + "/dashboard" });
+    const res = await lovable.auth.signInWithOAuth(provider, { redirect_uri: window.location.origin });
     if (res.error) toast.error(res.error.message);
   };
 
