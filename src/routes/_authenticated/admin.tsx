@@ -40,7 +40,7 @@ function AdminPage() {
   });
 
   const setStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) =>
+    mutationFn: async ({ id, status }: { id: string; status: "active" | "banned" | "pending" }) =>
       (await supabase.from("profiles").update({ status }).eq("id", id)).error,
     onSuccess: () => { toast.success("تم التحديث"); qc.invalidateQueries({ queryKey: ["admin-users"] }); },
   });
