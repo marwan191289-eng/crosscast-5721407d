@@ -19,6 +19,9 @@ import { Route as AuthenticatedJobsRouteImport } from './routes/_authenticated/j
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
+import { Route as ApiPublicCronProcessJobsRouteImport } from './routes/api/public/cron/process-jobs'
+import { Route as ApiPublicFeedsUserIdPfDotxmlRouteImport } from './routes/api/public/feeds/$userId/pf[.]xml'
+import { Route as ApiPublicFeedsUserIdBayutDotxmlRouteImport } from './routes/api/public/feeds/$userId/bayut[.]xml'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -69,6 +72,24 @@ const AuthenticatedActivityRoute = AuthenticatedActivityRouteImport.update({
   path: '/activity',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const ApiPublicCronProcessJobsRoute =
+  ApiPublicCronProcessJobsRouteImport.update({
+    id: '/api/public/cron/process-jobs',
+    path: '/api/public/cron/process-jobs',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicFeedsUserIdPfDotxmlRoute =
+  ApiPublicFeedsUserIdPfDotxmlRouteImport.update({
+    id: '/api/public/feeds/$userId/pf.xml',
+    path: '/api/public/feeds/$userId/pf.xml',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicFeedsUserIdBayutDotxmlRoute =
+  ApiPublicFeedsUserIdBayutDotxmlRouteImport.update({
+    id: '/api/public/feeds/$userId/bayut.xml',
+    path: '/api/public/feeds/$userId/bayut.xml',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -80,6 +101,9 @@ export interface FileRoutesByFullPath {
   '/jobs': typeof AuthenticatedJobsRoute
   '/listings': typeof AuthenticatedListingsRoute
   '/platforms': typeof AuthenticatedPlatformsRoute
+  '/api/public/cron/process-jobs': typeof ApiPublicCronProcessJobsRoute
+  '/api/public/feeds/$userId/bayut.xml': typeof ApiPublicFeedsUserIdBayutDotxmlRoute
+  '/api/public/feeds/$userId/pf.xml': typeof ApiPublicFeedsUserIdPfDotxmlRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -91,6 +115,9 @@ export interface FileRoutesByTo {
   '/jobs': typeof AuthenticatedJobsRoute
   '/listings': typeof AuthenticatedListingsRoute
   '/platforms': typeof AuthenticatedPlatformsRoute
+  '/api/public/cron/process-jobs': typeof ApiPublicCronProcessJobsRoute
+  '/api/public/feeds/$userId/bayut.xml': typeof ApiPublicFeedsUserIdBayutDotxmlRoute
+  '/api/public/feeds/$userId/pf.xml': typeof ApiPublicFeedsUserIdPfDotxmlRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -104,6 +131,9 @@ export interface FileRoutesById {
   '/_authenticated/jobs': typeof AuthenticatedJobsRoute
   '/_authenticated/listings': typeof AuthenticatedListingsRoute
   '/_authenticated/platforms': typeof AuthenticatedPlatformsRoute
+  '/api/public/cron/process-jobs': typeof ApiPublicCronProcessJobsRoute
+  '/api/public/feeds/$userId/bayut.xml': typeof ApiPublicFeedsUserIdBayutDotxmlRoute
+  '/api/public/feeds/$userId/pf.xml': typeof ApiPublicFeedsUserIdPfDotxmlRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -117,6 +147,9 @@ export interface FileRouteTypes {
     | '/jobs'
     | '/listings'
     | '/platforms'
+    | '/api/public/cron/process-jobs'
+    | '/api/public/feeds/$userId/bayut.xml'
+    | '/api/public/feeds/$userId/pf.xml'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -128,6 +161,9 @@ export interface FileRouteTypes {
     | '/jobs'
     | '/listings'
     | '/platforms'
+    | '/api/public/cron/process-jobs'
+    | '/api/public/feeds/$userId/bayut.xml'
+    | '/api/public/feeds/$userId/pf.xml'
   id:
     | '__root__'
     | '/'
@@ -140,6 +176,9 @@ export interface FileRouteTypes {
     | '/_authenticated/jobs'
     | '/_authenticated/listings'
     | '/_authenticated/platforms'
+    | '/api/public/cron/process-jobs'
+    | '/api/public/feeds/$userId/bayut.xml'
+    | '/api/public/feeds/$userId/pf.xml'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -147,6 +186,9 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
+  ApiPublicCronProcessJobsRoute: typeof ApiPublicCronProcessJobsRoute
+  ApiPublicFeedsUserIdBayutDotxmlRoute: typeof ApiPublicFeedsUserIdBayutDotxmlRoute
+  ApiPublicFeedsUserIdPfDotxmlRoute: typeof ApiPublicFeedsUserIdPfDotxmlRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -221,6 +263,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedActivityRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/api/public/cron/process-jobs': {
+      id: '/api/public/cron/process-jobs'
+      path: '/api/public/cron/process-jobs'
+      fullPath: '/api/public/cron/process-jobs'
+      preLoaderRoute: typeof ApiPublicCronProcessJobsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/feeds/$userId/pf.xml': {
+      id: '/api/public/feeds/$userId/pf.xml'
+      path: '/api/public/feeds/$userId/pf.xml'
+      fullPath: '/api/public/feeds/$userId/pf.xml'
+      preLoaderRoute: typeof ApiPublicFeedsUserIdPfDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/feeds/$userId/bayut.xml': {
+      id: '/api/public/feeds/$userId/bayut.xml'
+      path: '/api/public/feeds/$userId/bayut.xml'
+      fullPath: '/api/public/feeds/$userId/bayut.xml'
+      preLoaderRoute: typeof ApiPublicFeedsUserIdBayutDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -251,6 +314,9 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
+  ApiPublicCronProcessJobsRoute: ApiPublicCronProcessJobsRoute,
+  ApiPublicFeedsUserIdBayutDotxmlRoute: ApiPublicFeedsUserIdBayutDotxmlRoute,
+  ApiPublicFeedsUserIdPfDotxmlRoute: ApiPublicFeedsUserIdPfDotxmlRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

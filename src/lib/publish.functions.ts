@@ -1,76 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { runPlatform } from "./publish.worker.server";
 
 const PublishInput = z.object({ jobId: z.string().uuid() });
-
-async function runPlatform(kind: string, listing: any, platform: any): Promise<{
-  ok: boolean; response: any; error?: string; external_id?: string; external_url?: string;
-}> {
-  try {
-    switch (kind) {
-      case "custom_webhook": {
-        const url = platform.config?.url;
-        const method = platform.config?.method ?? "POST";
-        const headers = platform.config?.headers ?? {};
-        if (!url) return { ok: false, response: null, error: "missing webhook url" };
-        const res = await fetch(url, {
-          method,
-          headers: { "Content-Type": "application/json", ...headers },
-          body: JSON.stringify({
-            title: listing.title,
-            description: listing.description,
-            price: listing.price,
-            currency: listing.currency,
-            category: listing.category,
-            location: listing.location,
-            media: listing.media,
-            contact: listing.contact,
-            attributes: listing.attributes,
-          }),
-        });
-        const text = await res.text();
-        let body: any = text;
-        try { body = JSON.parse(text); } catch {}
-        return { ok: res.ok, response: { status: res.status, body }, error: res.ok ? undefined : `HTTP ${res.status}` };
-      }
-      case "wordpress": {
-        const url = (platform.config?.url ?? "").replace(/\/$/, "") + "/wp-json/wp/v2/posts";
-        const token = platform.config?.token;
-        if (!url || !token) return { ok: false, response: null, error: "missing wordpress url or token" };
-        const res = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Basic ${token}` },
-          body: JSON.stringify({ title: listing.title, content: listing.description, status: "publish" }),
-        });
-        const body = await res.json().catch(() => null);
-        return { ok: res.ok, response: { status: res.status, body }, external_id: body?.id?.toString(), external_url: body?.link, error: res.ok ? undefined : `HTTP ${res.status}` };
-      }
-      case "facebook_page": {
-        const pageId = platform.config?.page_id;
-        const token = platform.config?.page_access_token;
-        if (!pageId || !token) return { ok: false, response: null, error: "missing Facebook page_id or page_access_token (Graph API)" };
-        const msg = `${listing.title}\n\n${listing.description}${listing.price ? `\n\nالسعر: ${listing.price} ${listing.currency ?? ""}` : ""}`;
-        const res = await fetch(`https://graph.facebook.com/v21.0/${pageId}/feed`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: msg, access_token: token }),
-        });
-        const body = await res.json().catch(() => null);
-        return { ok: res.ok, response: { status: res.status, body }, external_id: body?.id, external_url: body?.id ? `https://facebook.com/${body.id}` : undefined, error: res.ok ? undefined : body?.error?.message ?? `HTTP ${res.status}` };
-      }
-      case "bayut_feed":
-      case "property_finder_feed":
-        return { ok: true, response: { note: "XML feed updated — refresh occurs when the platform pulls the feed on its schedule." } };
-      case "dubizzle_export":
-        return { ok: true, response: { note: "Listing queued in Dubizzle Business bulk export." } };
-      default:
-        return { ok: false, response: null, error: `unknown platform kind: ${kind}` };
-    }
-  } catch (e: any) {
-    return { ok: false, response: null, error: e?.message ?? String(e) };
-  }
-}
 
 export const runPublishJob = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
