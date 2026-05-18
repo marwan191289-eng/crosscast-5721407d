@@ -14,16 +14,261 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      activity_log: {
+        Row: {
+          action: string
+          created_at: string
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          metadata: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          metadata?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          metadata?: Json | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      listings: {
+        Row: {
+          attributes: Json | null
+          category: string | null
+          contact: Json | null
+          created_at: string
+          currency: string | null
+          description: string
+          id: string
+          kind: string
+          location: string | null
+          media: Json | null
+          price: number | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attributes?: Json | null
+          category?: string | null
+          contact?: Json | null
+          created_at?: string
+          currency?: string | null
+          description: string
+          id?: string
+          kind?: string
+          location?: string | null
+          media?: Json | null
+          price?: number | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attributes?: Json | null
+          category?: string | null
+          contact?: Json | null
+          created_at?: string
+          currency?: string | null
+          description?: string
+          id?: string
+          kind?: string
+          location?: string | null
+          media?: Json | null
+          price?: number | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      platforms: {
+        Row: {
+          config: Json
+          created_at: string
+          enabled: boolean
+          id: string
+          kind: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          kind: string
+          name: string
+          user_id: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          kind?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          email: string | null
+          id: string
+          phone: string | null
+          status: Database["public"]["Enums"]["account_status"]
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id: string
+          phone?: string | null
+          status?: Database["public"]["Enums"]["account_status"]
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          phone?: string | null
+          status?: Database["public"]["Enums"]["account_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      publish_jobs: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          external_post_id: string | null
+          external_post_url: string | null
+          finished_at: string | null
+          id: string
+          listing_id: string
+          platform_id: string
+          progress: number
+          request_payload: Json | null
+          response_payload: Json | null
+          scheduled_at: string | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["job_status"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          external_post_id?: string | null
+          external_post_url?: string | null
+          finished_at?: string | null
+          id?: string
+          listing_id: string
+          platform_id: string
+          progress?: number
+          request_payload?: Json | null
+          response_payload?: Json | null
+          scheduled_at?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["job_status"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          external_post_id?: string | null
+          external_post_url?: string | null
+          finished_at?: string | null
+          id?: string
+          listing_id?: string
+          platform_id?: string
+          progress?: number
+          request_payload?: Json | null
+          response_payload?: Json | null
+          scheduled_at?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["job_status"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "publish_jobs_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "publish_jobs_platform_id_fkey"
+            columns: ["platform_id"]
+            isOneToOne: false
+            referencedRelation: "platforms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          granted_by: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          granted_by?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          granted_by?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      account_status: "pending" | "active" | "banned"
+      app_role: "super_admin" | "admin" | "manager" | "agent" | "viewer"
+      job_status: "queued" | "running" | "success" | "failed" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +395,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      account_status: ["pending", "active", "banned"],
+      app_role: ["super_admin", "admin", "manager", "agent", "viewer"],
+      job_status: ["queued", "running", "success", "failed", "cancelled"],
+    },
   },
 } as const
