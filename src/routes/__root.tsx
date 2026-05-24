@@ -7,10 +7,12 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
+import i18n, { applyLangToDocument, SUPPORTED_LANGS } from "@/lib/i18n";
 import appCss from "../styles.css?url";
 
 const SITE = "https://crosscast.lovable.app";
