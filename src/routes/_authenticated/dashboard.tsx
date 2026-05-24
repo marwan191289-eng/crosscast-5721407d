@@ -1,17 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, Plug, Radio, CheckCircle2, XCircle } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "الرئيسية — CrossCast" }] }),
+  head: () => ({ meta: [{ title: "CrossCast" }] }),
   component: Dashboard,
 });
 
 function Dashboard() {
   const { user, profile } = useAuth();
+  const { t } = useTranslation();
   const { data: stats } = useQuery({
     queryKey: ["stats", user?.id],
     queryFn: async () => {
@@ -26,20 +28,22 @@ function Dashboard() {
     },
   });
 
+  const cards = [
+    { i: FileText, label: t("dashboard.listings"), value: stats?.listings, color: "text-primary" },
+    { i: Plug, label: t("dashboard.platforms"), value: stats?.platforms, color: "text-accent" },
+    { i: Radio, label: t("dashboard.jobs"), value: stats?.jobs, color: "text-primary-glow" },
+    { i: CheckCircle2, label: t("dashboard.success"), value: stats?.success, color: "text-success" },
+    { i: XCircle, label: t("dashboard.failed"), value: stats?.failed, color: "text-destructive" },
+  ];
+
   return (
     <div className="space-y-6 p-6">
       <div>
-        <h1 className="text-3xl font-bold">مرحباً، {profile?.display_name ?? "👋"}</h1>
-        <p className="text-muted-foreground">نظرة عامة على نشاطك في CrossCast</p>
+        <h1 className="text-3xl font-bold">{t("dashboard.welcome", { name: profile?.display_name ?? "👋" })}</h1>
+        <p className="text-muted-foreground">{t("dashboard.overview")}</p>
       </div>
       <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
-        {[
-          { i: FileText, label: "إعلانات", value: stats?.listings, color: "text-primary" },
-          { i: Plug, label: "منصات", value: stats?.platforms, color: "text-accent" },
-          { i: Radio, label: "مهام النشر", value: stats?.jobs, color: "text-primary-glow" },
-          { i: CheckCircle2, label: "نجحت", value: stats?.success, color: "text-success" },
-          { i: XCircle, label: "فشلت", value: stats?.failed, color: "text-destructive" },
-        ].map(({ i: Icon, label, value, color }) => (
+        {cards.map(({ i: Icon, label, value, color }) => (
           <Card key={label} className="border-border bg-card/60 backdrop-blur">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">{label}</CardTitle>
@@ -51,9 +55,7 @@ function Dashboard() {
       </div>
       {profile?.status === "pending" && (
         <Card className="border-warning/30 bg-warning/10">
-          <CardContent className="p-6">
-            <p className="font-medium">حسابك قيد المراجعة من قِبل الإدارة. لن تتمكن من النشر حتى تتم الموافقة.</p>
-          </CardContent>
+          <CardContent className="p-6"><p className="font-medium">{t("dashboard.pendingNote")}</p></CardContent>
         </Card>
       )}
     </div>

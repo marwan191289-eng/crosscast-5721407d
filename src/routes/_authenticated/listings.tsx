@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -16,12 +17,13 @@ import { useServerFn } from "@tanstack/react-start";
 import { enqueuePublish, runPublishJob } from "@/lib/publish.functions";
 
 export const Route = createFileRoute("/_authenticated/listings")({
-  head: () => ({ meta: [{ title: "الإعلانات — CrossCast" }] }),
+  head: () => ({ meta: [{ title: "CrossCast" }] }),
   component: ListingsPage,
 });
 
 function ListingsPage() {
   const qc = useQueryClient();
+  const { t } = useTranslation();
   const enqueue = useServerFn(enqueuePublish);
   const runJob = useServerFn(runPublishJob);
   const [open, setOpen] = useState(false);
@@ -43,19 +45,17 @@ function ListingsPage() {
 
   const del = useMutation({
     mutationFn: async (id: string) => (await supabase.from("listings").delete().eq("id", id)).error,
-    onSuccess: () => { toast.success("تم الحذف"); qc.invalidateQueries({ queryKey: ["listings"] }); },
+    onSuccess: () => { toast.success(t("listings.deleted")); qc.invalidateQueries({ queryKey: ["listings"] }); },
   });
 
   const publishNow = async (listingId: string) => {
     const ids = Object.keys(selected).filter((k) => selected[k]);
-    if (!ids.length) return toast.error("اختر منصة واحدة على الأقل");
+    if (!ids.length) return toast.error(t("listings.pickOne"));
     const { jobIds } = await enqueue({ data: { listingId, platformIds: ids } });
-    toast.success(`تم إنشاء ${jobIds.length} مهمة، يتم التنفيذ...`);
+    toast.success(t("listings.jobsCreated", { n: jobIds.length }));
     setPubFor(null);
     setSelected({});
-    for (const id of jobIds) {
-      runJob({ data: { jobId: id } }).catch(() => {});
-    }
+    for (const id of jobIds) runJob({ data: { jobId: id } }).catch(() => {});
     qc.invalidateQueries({ queryKey: ["jobs"] });
   };
 
@@ -63,26 +63,24 @@ function ListingsPage() {
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">الإعلانات</h1>
-          <p className="text-muted-foreground">إعلاناتك الموحّدة الجاهزة للنشر</p>
+          <h1 className="text-3xl font-bold">{t("listings.title")}</h1>
+          <p className="text-muted-foreground">{t("listings.sub")}</p>
         </div>
         <NewListingDialog open={open} onOpenChange={setOpen} onCreated={() => qc.invalidateQueries({ queryKey: ["listings"] })} />
       </div>
 
-      {!listings?.length && <Card><CardContent className="p-8 text-center text-muted-foreground">لا توجد إعلانات بعد. أضف أول إعلان لك.</CardContent></Card>}
+      {!listings?.length && <Card><CardContent className="p-8 text-center text-muted-foreground">{t("listings.empty")}</CardContent></Card>}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {listings?.map((l: any) => (
           <Card key={l.id} className="border-border bg-card/60 backdrop-blur">
-            <CardHeader>
-              <CardTitle className="line-clamp-1">{l.title}</CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle className="line-clamp-1">{l.title}</CardTitle></CardHeader>
             <CardContent className="space-y-3">
               <p className="line-clamp-3 text-sm text-muted-foreground">{l.description}</p>
               {l.price && <p className="text-sm font-medium">{l.price} {l.currency}</p>}
               <div className="flex gap-2">
                 <Button size="sm" onClick={() => setPubFor(l.id)} style={{ background: "var(--gradient-primary)", color: "var(--primary-foreground)" }}>
-                  <Send className="size-3.5" /> نشر
+                  <Send className="size-3.5" /> {t("listings.publish")}
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => del.mutate(l.id)}><Trash2 className="size-3.5" /></Button>
               </div>
@@ -93,10 +91,10 @@ function ListingsPage() {
 
       <Dialog open={!!pubFor} onOpenChange={(o) => !o && setPubFor(null)}>
         <DialogContent>
-          <DialogHeader><DialogTitle>اختر المنصات للنشر</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{t("listings.chooseTargets")}</DialogTitle></DialogHeader>
           {!platforms?.length ? (
             <p className="text-sm text-muted-foreground">
-              لا توجد منصات مفعّلة. <Link to="/platforms" className="text-primary underline">أضِف منصة</Link>
+              {t("listings.noPlatforms")} <Link to="/platforms" className="text-primary underline">{t("listings.addPlatform")}</Link>
             </p>
           ) : (
             <div className="space-y-2">
@@ -112,7 +110,7 @@ function ListingsPage() {
             </div>
           )}
           <DialogFooter>
-            <Button onClick={() => pubFor && publishNow(pubFor)} disabled={!platforms?.length}>تنفيذ الآن</Button>
+            <Button onClick={() => pubFor && publishNow(pubFor)} disabled={!platforms?.length}>{t("listings.runNow")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -121,6 +119,7 @@ function ListingsPage() {
 }
 
 function NewListingDialog({ open, onOpenChange, onCreated }: { open: boolean; onOpenChange: (b: boolean) => void; onCreated: () => void }) {
+  const { t } = useTranslation();
   const [form, setForm] = useState({ title: "", description: "", price: "", currency: "AED", category: "", location: "", kind: "ad" });
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -132,7 +131,7 @@ function NewListingDialog({ open, onOpenChange, onCreated }: { open: boolean; on
       currency: form.currency, category: form.category, location: form.location, kind: form.kind,
     });
     if (error) return toast.error(error.message);
-    toast.success("تم إنشاء الإعلان");
+    toast.success(t("listings.created"));
     onCreated();
     onOpenChange(false);
     setForm({ title: "", description: "", price: "", currency: "AED", category: "", location: "", kind: "ad" });
@@ -140,33 +139,33 @@ function NewListingDialog({ open, onOpenChange, onCreated }: { open: boolean; on
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
-        <Button style={{ background: "var(--gradient-primary)", color: "var(--primary-foreground)" }}><Plus className="size-4" /> إعلان جديد</Button>
+        <Button style={{ background: "var(--gradient-primary)", color: "var(--primary-foreground)" }}><Plus className="size-4" /> {t("listings.newBtn")}</Button>
       </DialogTrigger>
       <DialogContent className="max-w-lg">
-        <DialogHeader><DialogTitle>إنشاء إعلان</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>{t("listings.create")}</DialogTitle></DialogHeader>
         <form onSubmit={submit} className="space-y-3">
-          <div><Label>النوع</Label>
+          <div><Label>{t("listings.kind")}</Label>
             <Select value={form.kind} onValueChange={(v) => setForm({ ...form, kind: v })}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="ad">إعلان</SelectItem>
-                <SelectItem value="video">فيديو</SelectItem>
-                <SelectItem value="reel">ريل</SelectItem>
-                <SelectItem value="story">حالة</SelectItem>
+                <SelectItem value="ad">{t("listings.kindAd")}</SelectItem>
+                <SelectItem value="video">{t("listings.kindVideo")}</SelectItem>
+                <SelectItem value="reel">{t("listings.kindReel")}</SelectItem>
+                <SelectItem value="story">{t("listings.kindStory")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          <div><Label>العنوان</Label><Input required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
-          <div><Label>الوصف</Label><Textarea required rows={4} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
+          <div><Label>{t("listings.titleField")}</Label><Input required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
+          <div><Label>{t("listings.desc")}</Label><Textarea required rows={4} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
           <div className="grid grid-cols-2 gap-2">
-            <div><Label>السعر</Label><Input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} /></div>
-            <div><Label>العملة</Label><Input value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })} /></div>
+            <div><Label>{t("listings.price")}</Label><Input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} /></div>
+            <div><Label>{t("listings.currency")}</Label><Input value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })} /></div>
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <div><Label>الفئة</Label><Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} /></div>
-            <div><Label>الموقع</Label><Input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} /></div>
+            <div><Label>{t("listings.category")}</Label><Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} /></div>
+            <div><Label>{t("listings.location")}</Label><Input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} /></div>
           </div>
-          <DialogFooter><Button type="submit">حفظ</Button></DialogFooter>
+          <DialogFooter><Button type="submit">{t("common.save")}</Button></DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

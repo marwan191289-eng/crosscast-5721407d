@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Trash2 } from "lucide-react";
 
 const KINDS = [
-  { v: "facebook_page", label: "Facebook Page (Graph API) — يحتاج page_id + page_access_token" },
+  { v: "facebook_page", label: "Facebook Page (Graph API) — page_id + page_access_token" },
   { v: "custom_webhook", label: "Custom Webhook / REST API" },
   { v: "wordpress", label: "WordPress (REST API)" },
   { v: "bayut_feed", label: "Bayut XML Feed" },
@@ -23,12 +24,13 @@ const KINDS = [
 ];
 
 export const Route = createFileRoute("/_authenticated/platforms")({
-  head: () => ({ meta: [{ title: "المنصات — CrossCast" }] }),
+  head: () => ({ meta: [{ title: "CrossCast" }] }),
   component: PlatformsPage,
 });
 
 function PlatformsPage() {
   const qc = useQueryClient();
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
 
   const { data } = useQuery({
@@ -42,20 +44,20 @@ function PlatformsPage() {
   });
   const del = useMutation({
     mutationFn: async (id: string) => (await supabase.from("platforms").delete().eq("id", id)).error,
-    onSuccess: () => { toast.success("تم الحذف"); qc.invalidateQueries({ queryKey: ["platforms-list"] }); },
+    onSuccess: () => { toast.success(t("listings.deleted")); qc.invalidateQueries({ queryKey: ["platforms-list"] }); },
   });
 
   return (
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">المنصات</h1>
-          <p className="text-muted-foreground">إعدادات منصات النشر — يتم استخدام APIs الرسمية لكل منصة</p>
+          <h1 className="text-3xl font-bold">{t("platforms.title")}</h1>
+          <p className="text-muted-foreground">{t("platforms.sub")}</p>
         </div>
         <NewPlatformDialog open={open} onOpenChange={setOpen} onCreated={() => qc.invalidateQueries({ queryKey: ["platforms-list"] })} />
       </div>
 
-      {!data?.length && <Card><CardContent className="p-8 text-center text-muted-foreground">لا توجد منصات بعد. أضف أول منصة لك.</CardContent></Card>}
+      {!data?.length && <Card><CardContent className="p-8 text-center text-muted-foreground">{t("platforms.empty")}</CardContent></Card>}
 
       <div className="grid gap-3">
         {data?.map((p: any) => (
@@ -67,7 +69,7 @@ function PlatformsPage() {
               </div>
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2 text-xs">
-                  <span>{p.enabled ? "مفعّل" : "معطّل"}</span>
+                  <span>{p.enabled ? t("platforms.enabled") : t("platforms.disabled")}</span>
                   <Switch checked={p.enabled} onCheckedChange={() => toggle.mutate(p)} />
                 </div>
                 <Button variant="ghost" size="icon" onClick={() => del.mutate(p.id)}><Trash2 className="size-4" /></Button>
@@ -81,6 +83,7 @@ function PlatformsPage() {
 }
 
 function NewPlatformDialog({ open, onOpenChange, onCreated }: { open: boolean; onOpenChange: (b: boolean) => void; onCreated: () => void }) {
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [kind, setKind] = useState("custom_webhook");
   const [config, setConfig] = useState('{\n  "url": "https://example.com/webhook"\n}');
@@ -88,12 +91,12 @@ function NewPlatformDialog({ open, onOpenChange, onCreated }: { open: boolean; o
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     let cfg: any = {};
-    try { cfg = JSON.parse(config); } catch { return toast.error("JSON غير صحيح"); }
+    try { cfg = JSON.parse(config); } catch { return toast.error(t("platforms.badJson")); }
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     const { error } = await supabase.from("platforms").insert({ user_id: user.id, name, kind, config: cfg });
     if (error) return toast.error(error.message);
-    toast.success("تم إضافة المنصة");
+    toast.success(t("platforms.added"));
     onCreated();
     onOpenChange(false);
     setName(""); setKind("custom_webhook"); setConfig('{\n  "url": "https://example.com/webhook"\n}');
@@ -102,26 +105,26 @@ function NewPlatformDialog({ open, onOpenChange, onCreated }: { open: boolean; o
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
-        <Button style={{ background: "var(--gradient-primary)", color: "var(--primary-foreground)" }}><Plus className="size-4" /> منصة جديدة</Button>
+        <Button style={{ background: "var(--gradient-primary)", color: "var(--primary-foreground)" }}><Plus className="size-4" /> {t("platforms.newBtn")}</Button>
       </DialogTrigger>
       <DialogContent className="max-w-lg">
-        <DialogHeader><DialogTitle>إضافة منصة</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>{t("platforms.create")}</DialogTitle></DialogHeader>
         <form onSubmit={submit} className="space-y-3">
-          <div><Label>الاسم</Label><Input required value={name} onChange={(e) => setName(e.target.value)} /></div>
-          <div><Label>النوع</Label>
+          <div><Label>{t("platforms.name")}</Label><Input required value={name} onChange={(e) => setName(e.target.value)} /></div>
+          <div><Label>{t("platforms.kind")}</Label>
             <Select value={kind} onValueChange={setKind}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>{KINDS.map((k) => <SelectItem key={k.v} value={k.v}>{k.label}</SelectItem>)}</SelectContent>
             </Select>
           </div>
           <div>
-            <Label>الإعدادات (JSON)</Label>
+            <Label>{t("platforms.configJson")}</Label>
             <Textarea rows={8} value={config} onChange={(e) => setConfig(e.target.value)} className="font-mono text-xs" />
             <p className="mt-1 text-xs text-muted-foreground">
-              مثال FB: {`{ "page_id": "...", "page_access_token": "..." }`}
+              {t("platforms.hintFb")} {`{ "page_id": "...", "page_access_token": "..." }`}
             </p>
           </div>
-          <DialogFooter><Button type="submit">حفظ</Button></DialogFooter>
+          <DialogFooter><Button type="submit">{t("common.save")}</Button></DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

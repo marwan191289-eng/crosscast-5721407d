@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,7 +14,7 @@ import { CheckCircle2, Ban, Trash2 } from "lucide-react";
 const ROLES = ["super_admin", "admin", "manager", "agent", "viewer"] as const;
 
 export const Route = createFileRoute("/_authenticated/admin")({
-  head: () => ({ meta: [{ title: "لوحة الإدارة — CrossCast" }] }),
+  head: () => ({ meta: [{ title: "CrossCast" }] }),
   component: AdminPage,
 });
 
@@ -21,10 +22,9 @@ function AdminPage() {
   const { isAdmin, loading } = useAuth();
   const nav = useNavigate();
   const qc = useQueryClient();
+  const { t } = useTranslation();
 
-  useEffect(() => {
-    if (!loading && !isAdmin) nav({ to: "/dashboard" });
-  }, [loading, isAdmin, nav]);
+  useEffect(() => { if (!loading && !isAdmin) nav({ to: "/dashboard" }); }, [loading, isAdmin, nav]);
 
   const { data: users } = useQuery({
     queryKey: ["admin-users"],
@@ -42,16 +42,16 @@ function AdminPage() {
   const setStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: "active" | "banned" | "pending" }) =>
       (await supabase.from("profiles").update({ status }).eq("id", id)).error,
-    onSuccess: () => { toast.success("تم التحديث"); qc.invalidateQueries({ queryKey: ["admin-users"] }); },
+    onSuccess: () => { toast.success(t("admin.updated")); qc.invalidateQueries({ queryKey: ["admin-users"] }); },
   });
   const removeUser = useMutation({
     mutationFn: async (id: string) => (await supabase.from("profiles").delete().eq("id", id)).error,
-    onSuccess: () => { toast.success("تم الحذف"); qc.invalidateQueries({ queryKey: ["admin-users"] }); },
+    onSuccess: () => { toast.success(t("admin.deleted")); qc.invalidateQueries({ queryKey: ["admin-users"] }); },
   });
   const grant = useMutation({
     mutationFn: async ({ user_id, role }: { user_id: string; role: string }) =>
       (await supabase.from("user_roles").insert({ user_id, role: role as any })).error,
-    onSuccess: () => { toast.success("تم منح الدور"); qc.invalidateQueries({ queryKey: ["admin-users"] }); },
+    onSuccess: () => { toast.success(t("admin.granted")); qc.invalidateQueries({ queryKey: ["admin-users"] }); },
   });
   const revoke = useMutation({
     mutationFn: async ({ user_id, role }: { user_id: string; role: string }) =>
@@ -64,8 +64,8 @@ function AdminPage() {
   return (
     <div className="space-y-6 p-6">
       <div>
-        <h1 className="text-3xl font-bold">لوحة الإدارة</h1>
-        <p className="text-muted-foreground">إدارة الحسابات والصلاحيات</p>
+        <h1 className="text-3xl font-bold">{t("admin.title")}</h1>
+        <p className="text-muted-foreground">{t("admin.sub")}</p>
       </div>
       <div className="space-y-3">
         {users?.map((u: any) => (
@@ -78,32 +78,32 @@ function AdminPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant={u.status === "active" ? "default" : u.status === "banned" ? "destructive" : "outline"}>
-                    {u.status === "pending" ? "بانتظار الموافقة" : u.status === "active" ? "مفعّل" : "محظور"}
+                    {u.status === "pending" ? t("admin.statusPending") : u.status === "active" ? t("admin.statusActive") : t("admin.statusBanned")}
                   </Badge>
                   {u.status !== "active" && (
                     <Button size="sm" variant="outline" onClick={() => setStatus.mutate({ id: u.id, status: "active" })}>
-                      <CheckCircle2 className="size-3.5" /> تفعيل
+                      <CheckCircle2 className="size-3.5" /> {t("admin.activate")}
                     </Button>
                   )}
                   {u.status !== "banned" && (
                     <Button size="sm" variant="outline" onClick={() => setStatus.mutate({ id: u.id, status: "banned" })}>
-                      <Ban className="size-3.5" /> حظر
+                      <Ban className="size-3.5" /> {t("admin.ban")}
                     </Button>
                   )}
-                  <Button size="sm" variant="ghost" onClick={() => { if (confirm("حذف الحساب نهائياً؟")) removeUser.mutate(u.id); }}>
+                  <Button size="sm" variant="ghost" onClick={() => { if (confirm(t("admin.confirmDelete"))) removeUser.mutate(u.id); }}>
                     <Trash2 className="size-3.5" />
                   </Button>
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs text-muted-foreground">الأدوار:</span>
+                <span className="text-xs text-muted-foreground">{t("admin.roles")}</span>
                 {u.roles.map((r: string) => (
                   <Badge key={r} variant="secondary" className="cursor-pointer" onClick={() => revoke.mutate({ user_id: u.id, role: r })}>
                     {r} ×
                   </Badge>
                 ))}
                 <Select onValueChange={(v) => grant.mutate({ user_id: u.id, role: v })}>
-                  <SelectTrigger className="h-7 w-32 text-xs"><SelectValue placeholder="+ منح دور" /></SelectTrigger>
+                  <SelectTrigger className="h-7 w-32 text-xs"><SelectValue placeholder={t("admin.grantRole")} /></SelectTrigger>
                   <SelectContent>
                     {ROLES.filter((r) => !u.roles.includes(r)).map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
                   </SelectContent>

@@ -7,10 +7,12 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
+import i18n, { applyLangToDocument, SUPPORTED_LANGS } from "@/lib/i18n";
 import appCss from "../styles.css?url";
 
 const SITE = "https://crosscast.lovable.app";
@@ -19,13 +21,14 @@ const DESC =
   "Cross-post real-estate and marketplace listings to Facebook Pages, Bayut, Property Finder, Dubizzle and any custom API — from one dashboard, using official APIs.";
 
 function NotFound() {
+  const { t } = useTranslation();
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-7xl font-bold">404</h1>
-        <p className="mt-4 text-muted-foreground">الصفحة غير موجودة</p>
+        <p className="mt-4 text-muted-foreground">{t("common.pageNotFound")}</p>
         <Link to="/" className="mt-6 inline-block rounded-md bg-primary px-4 py-2 text-primary-foreground">
-          العودة للرئيسية
+          {t("common.home")}
         </Link>
       </div>
     </div>
@@ -34,16 +37,17 @@ function NotFound() {
 
 function ErrorView({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
+  const { t } = useTranslation();
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold">حدث خطأ</h1>
+        <h1 className="text-xl font-semibold">{t("common.error")}</h1>
         <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
         <button
           onClick={() => { router.invalidate(); reset(); }}
           className="mt-6 rounded-md bg-primary px-4 py-2 text-primary-foreground"
         >
-          إعادة المحاولة
+          {t("common.retry")}
         </button>
       </div>
     </div>
@@ -82,8 +86,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: React.ReactNode }) {
+  // Use ssr-safe default; client effect updates after hydration
+  const [lang, setLang] = useState<string>(() => {
+    if (typeof window === "undefined") return "ar";
+    return (localStorage.getItem("i18nextLng") || "ar").split("-")[0];
+  });
+  const meta = SUPPORTED_LANGS.find((l) => l.code === lang) ?? SUPPORTED_LANGS[0];
+  useEffect(() => {
+    applyLangToDocument(i18n.language);
+    const h = (l: string) => { setLang(l); applyLangToDocument(l); };
+    i18n.on("languageChanged", h);
+    return () => { i18n.off("languageChanged", h); };
+  }, []);
   return (
-    <html lang="ar" dir="rtl">
+    <html lang={meta.code} dir={meta.dir}>
       <head><HeadContent /></head>
       <body>{children}<Scripts /></body>
     </html>
