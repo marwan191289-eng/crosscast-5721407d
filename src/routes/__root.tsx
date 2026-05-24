@@ -21,13 +21,14 @@ const DESC =
   "Cross-post real-estate and marketplace listings to Facebook Pages, Bayut, Property Finder, Dubizzle and any custom API — from one dashboard, using official APIs.";
 
 function NotFound() {
+  const { t } = useTranslation();
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-7xl font-bold">404</h1>
-        <p className="mt-4 text-muted-foreground">الصفحة غير موجودة</p>
+        <p className="mt-4 text-muted-foreground">{t("common.pageNotFound")}</p>
         <Link to="/" className="mt-6 inline-block rounded-md bg-primary px-4 py-2 text-primary-foreground">
-          العودة للرئيسية
+          {t("common.home")}
         </Link>
       </div>
     </div>
@@ -36,16 +37,17 @@ function NotFound() {
 
 function ErrorView({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
+  const { t } = useTranslation();
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold">حدث خطأ</h1>
+        <h1 className="text-xl font-semibold">{t("common.error")}</h1>
         <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
         <button
           onClick={() => { router.invalidate(); reset(); }}
           className="mt-6 rounded-md bg-primary px-4 py-2 text-primary-foreground"
         >
-          إعادة المحاولة
+          {t("common.retry")}
         </button>
       </div>
     </div>
