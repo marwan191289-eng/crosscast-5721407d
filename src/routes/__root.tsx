@@ -86,8 +86,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: React.ReactNode }) {
+  // Use ssr-safe default; client effect updates after hydration
+  const [lang, setLang] = useState<string>(() => {
+    if (typeof window === "undefined") return "ar";
+    return (localStorage.getItem("i18nextLng") || "ar").split("-")[0];
+  });
+  const meta = SUPPORTED_LANGS.find((l) => l.code === lang) ?? SUPPORTED_LANGS[0];
+  useEffect(() => {
+    applyLangToDocument(i18n.language);
+    const h = (l: string) => { setLang(l); applyLangToDocument(l); };
+    i18n.on("languageChanged", h);
+    return () => { i18n.off("languageChanged", h); };
+  }, []);
   return (
-    <html lang="ar" dir="rtl">
+    <html lang={meta.code} dir={meta.dir}>
       <head><HeadContent /></head>
       <body>{children}<Scripts /></body>
     </html>
