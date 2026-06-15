@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /listings
+Disallow: /platforms
+Disallow: /jobs
+Disallow: /activity
+Disallow: /admin
+Disallow: /api/
+
+Sitemap: https://crosscast.lovable.app/sitemap.xml

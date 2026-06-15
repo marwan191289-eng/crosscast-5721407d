@@ -12,8 +12,24 @@ import { useAuth } from "@/lib/auth";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import logo from "@/assets/logo.png";
 
+const PAGE_TITLE = "Sign in — CrossCast";
+const PAGE_DESC = "Sign in to your CrossCast account to publish real-estate listings to Facebook, Bayut, Property Finder and Dubizzle from one dashboard.";
+const PAGE_URL = "https://crosscast.lovable.app/login";
+
 export const Route = createFileRoute("/login")({
-  head: () => ({ meta: [{ title: "CrossCast" }] }),
+  head: () => ({
+    meta: [
+      { title: PAGE_TITLE },
+      { name: "description", content: PAGE_DESC },
+      { property: "og:title", content: PAGE_TITLE },
+      { property: "og:description", content: PAGE_DESC },
+      { property: "og:url", content: PAGE_URL },
+      { name: "twitter:title", content: PAGE_TITLE },
+      { name: "twitter:description", content: PAGE_DESC },
+      { name: "robots", content: "noindex,follow" },
+    ],
+    links: [{ rel: "canonical", href: PAGE_URL }],
+  }),
   component: LoginPage,
 });
 
@@ -48,7 +64,8 @@ function LoginPage() {
       <Card className="w-full max-w-md border-border bg-card/80 backdrop-blur">
         <CardHeader className="text-center">
           <Link to="/" className="mx-auto mb-2"><img src={logo} alt="CrossCast" width={48} height={48} className="rounded-xl" /></Link>
-          <CardTitle className="text-2xl">{t("auth.loginTitle")}</CardTitle>
+          <h1 className="text-2xl font-semibold">{t("auth.loginTitle")}</h1>
+          <CardTitle className="sr-only">{t("auth.loginTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-2">

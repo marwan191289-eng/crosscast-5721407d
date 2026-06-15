@@ -1,0 +1,14 @@
+# CrossCast
+
+> CrossCast publishes real-estate and marketplace listings once and syndicates them to Facebook Pages, Bayut, Property Finder, Dubizzle, WordPress and any custom webhook — using official APIs and XML feeds.
+
+CrossCast is built for UAE real-estate agents and brokerages who manage listings across multiple portals. It provides a single listing editor, per-platform adapters, scheduled publishing, and live job logs.
+
+## Pages
+
+- [Home](/): Product overview, features, and how cross-posting works.
+
+## Optional
+
+- [Sign in](/login): Existing-user login.
+- [Create account](/signup): Sign up for a new CrossCast account.

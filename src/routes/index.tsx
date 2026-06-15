@@ -12,7 +12,9 @@ export const Route = createFileRoute("/")({
     meta: [
       { name: "keywords", content: "cross posting, Bayut, Property Finder, Dubizzle, Facebook Marketplace, real estate UAE, listing automation" },
       { property: "og:image:alt", content: "CrossCast — publish listings to Facebook, Bayut, Property Finder, Dubizzle" },
+      { property: "og:url", content: "https://crosscast.lovable.app/" },
     ],
+    links: [{ rel: "canonical", href: "https://crosscast.lovable.app/" }],
     scripts: [
       {
         type: "application/ld+json",
@@ -87,16 +89,19 @@ function Landing() {
           </div>
         </main>
 
-        <section className="container mx-auto grid gap-6 px-6 pb-24 md:grid-cols-3">
-          {features.map(({ i: Icon, t: ti, d }) => (
-            <Card key={ti} className="border-border bg-card/60 p-6 backdrop-blur">
-              <div className="mb-4 inline-flex size-10 items-center justify-center rounded-lg" style={{ background: "var(--gradient-primary)" }}>
-                <Icon className="size-5" style={{ color: "var(--primary-foreground)" }} />
-              </div>
-              <h3 className="text-lg font-semibold">{ti}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{d}</p>
-            </Card>
-          ))}
+        <section className="container mx-auto px-6 pb-24">
+          <h2 className="mb-8 text-center text-3xl font-bold tracking-tight md:text-4xl">{t("landing.featuresTitle", "Why CrossCast")}</h2>
+          <div className="grid gap-6 md:grid-cols-3">
+            {features.map(({ i: Icon, t: ti, d }) => (
+              <Card key={ti} className="border-border bg-card/60 p-6 backdrop-blur">
+                <div className="mb-4 inline-flex size-10 items-center justify-center rounded-lg" style={{ background: "var(--gradient-primary)" }}>
+                  <Icon className="size-5" style={{ color: "var(--primary-foreground)" }} />
+                </div>
+                <h3 className="text-lg font-semibold">{ti}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">{d}</p>
+              </Card>
+            ))}
+          </div>
         </section>
 
         <footer className="border-t border-border">

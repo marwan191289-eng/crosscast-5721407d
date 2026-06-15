@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
@@ -23,6 +24,11 @@ import { Route as ApiPublicCronProcessJobsRouteImport } from './routes/api/publi
 import { Route as ApiPublicFeedsUserIdPfDotxmlRouteImport } from './routes/api/public/feeds/$userId/pf[.]xml'
 import { Route as ApiPublicFeedsUserIdBayutDotxmlRouteImport } from './routes/api/public/feeds/$userId/bayut[.]xml'
 
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/activity': typeof AuthenticatedActivityRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -109,6 +116,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/activity': typeof AuthenticatedActivityRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -125,6 +133,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/activity': typeof AuthenticatedActivityRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -141,6 +150,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/signup'
+    | '/sitemap.xml'
     | '/activity'
     | '/admin'
     | '/dashboard'
@@ -155,6 +165,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/signup'
+    | '/sitemap.xml'
     | '/activity'
     | '/admin'
     | '/dashboard'
@@ -170,6 +181,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/login'
     | '/signup'
+    | '/sitemap.xml'
     | '/_authenticated/activity'
     | '/_authenticated/admin'
     | '/_authenticated/dashboard'
@@ -186,6 +198,7 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiPublicCronProcessJobsRoute: typeof ApiPublicCronProcessJobsRoute
   ApiPublicFeedsUserIdBayutDotxmlRoute: typeof ApiPublicFeedsUserIdBayutDotxmlRoute
   ApiPublicFeedsUserIdPfDotxmlRoute: typeof ApiPublicFeedsUserIdPfDotxmlRoute
@@ -193,6 +206,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signup': {
       id: '/signup'
       path: '/signup'
@@ -314,6 +334,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiPublicCronProcessJobsRoute: ApiPublicCronProcessJobsRoute,
   ApiPublicFeedsUserIdBayutDotxmlRoute: ApiPublicFeedsUserIdBayutDotxmlRoute,
   ApiPublicFeedsUserIdPfDotxmlRoute: ApiPublicFeedsUserIdPfDotxmlRoute,
