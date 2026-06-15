@@ -1,33 +1,72 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
+// --- SSRF guard helpers ---
+const PRIVATE_HOST_RE =
+  /^(localhost$|127\.|10\.|0\.|169\.254\.|172\.(1[6-9]|2\d|3[0-1])\.|192\.168\.|::1$|fc|fd|fe80:)/i;
+
+function isPrivateHostname(host: string): boolean {
+  const h = host.toLowerCase();
+  if (h === "localhost" || h === "::1") return true;
+  if (PRIVATE_HOST_RE.test(h)) return true;
+  // metadata service hostnames
+  if (h.endsWith(".internal") || h.endsWith(".local")) return true;
+  return false;
+}
+
+function validateOutboundUrl(raw: string): { ok: true; url: URL } | { ok: false; error: string } {
+  let u: URL;
+  try { u = new URL(raw); } catch { return { ok: false, error: "invalid url" }; }
+  if (u.protocol !== "https:") return { ok: false, error: "only https:// is allowed" };
+  if (isPrivateHostname(u.hostname)) return { ok: false, error: "destination host is not allowed" };
+  // Disallow embedded credentials
+  if (u.username || u.password) return { ok: false, error: "credentials in url not allowed" };
+  return { ok: true, url: u };
+}
+
 export async function runPlatform(kind: string, listing: any, platform: any): Promise<{
   ok: boolean; response: any; error?: string; external_id?: string; external_url?: string;
 }> {
   try {
     switch (kind) {
       case "custom_webhook": {
-        const url = platform.config?.url;
+        const rawUrl = platform.config?.url;
         const method = platform.config?.method ?? "POST";
         const headers = platform.config?.headers ?? {};
-        if (!url) return { ok: false, response: null, error: "missing webhook url" };
-        const res = await fetch(url, {
-          method,
-          headers: { "Content-Type": "application/json", ...headers },
-          body: JSON.stringify({
-            title: listing.title, description: listing.description,
-            price: listing.price, currency: listing.currency,
-            category: listing.category, location: listing.location,
-            media: listing.media, contact: listing.contact, attributes: listing.attributes,
-          }),
-        });
-        const text = await res.text();
-        let body: any = text; try { body = JSON.parse(text); } catch {}
-        return { ok: res.ok, response: { status: res.status, body }, error: res.ok ? undefined : `HTTP ${res.status}` };
+        const includeContact = platform.config?.include_contact === true;
+        if (!rawUrl) return { ok: false, response: null, error: "missing webhook url" };
+        const check = validateOutboundUrl(rawUrl);
+        if (!check.ok) return { ok: false, response: null, error: `blocked webhook url: ${check.error}` };
+        const payload: Record<string, any> = {
+          title: listing.title, description: listing.description,
+          price: listing.price, currency: listing.currency,
+          category: listing.category, location: listing.location,
+          media: listing.media, attributes: listing.attributes,
+        };
+        if (includeContact) payload.contact = listing.contact;
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 10000);
+        try {
+          const res = await fetch(check.url.toString(), {
+            method,
+            redirect: "manual",
+            signal: ctrl.signal,
+            headers: { "Content-Type": "application/json", ...headers },
+            body: JSON.stringify(payload),
+          });
+          const text = await res.text();
+          let body: any = text; try { body = JSON.parse(text); } catch {}
+          return { ok: res.ok, response: { status: res.status, body }, error: res.ok ? undefined : `HTTP ${res.status}` };
+        } finally {
+          clearTimeout(timer);
+        }
       }
       case "wordpress": {
-        const url = (platform.config?.url ?? "").replace(/\/$/, "") + "/wp-json/wp/v2/posts";
+        const baseUrl = platform.config?.url;
         const token = platform.config?.token;
-        if (!platform.config?.url || !token) return { ok: false, response: null, error: "missing wordpress url or token" };
+        if (!baseUrl || !token) return { ok: false, response: null, error: "missing wordpress url or token" };
+        const check = validateOutboundUrl(baseUrl);
+        if (!check.ok) return { ok: false, response: null, error: `blocked wordpress url: ${check.error}` };
+        const url = check.url.toString().replace(/\/$/, "") + "/wp-json/wp/v2/posts";
         const res = await fetch(url, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Basic ${token}` },
@@ -106,6 +145,25 @@ function xmlEscape(s: any): string {
   return String(s ?? "").replace(/[<>&'"]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&apos;", '"': "&quot;" }[c]!));
 }
 
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let result = 0;
+  for (let i = 0; i < a.length; i++) result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return result === 0;
+}
+
+export async function verifyFeedToken(userId: string, token: string): Promise<boolean> {
+  if (!userId || !token || token.length < 16) return false;
+  const { data } = await supabaseAdmin
+    .from("profiles")
+    .select("feed_token")
+    .eq("id", userId)
+    .maybeSingle();
+  const expected = (data as any)?.feed_token as string | undefined;
+  if (!expected) return false;
+  return timingSafeEqual(token, expected);
+}
+
 export async function buildFeedXml(userId: string, variant: "bayut" | "property_finder"): Promise<string> {
   const { data: listings } = await supabaseAdmin
     .from("listings")
@@ -132,7 +190,6 @@ ${photos}
     </images>
   </property>`;
     }
-    // property_finder
     return `  <listing>
     <reference-number>${xmlEscape(l.id)}</reference-number>
     <title><![CDATA[${l.title ?? ""}]]></title>
