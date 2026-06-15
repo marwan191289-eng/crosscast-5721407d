@@ -69,7 +69,8 @@ function SignupPage() {
       <Card className="w-full max-w-md border-border bg-card/80 backdrop-blur">
         <CardHeader className="text-center">
           <Link to="/" className="mx-auto mb-2"><img src={logo} alt="CrossCast" width={48} height={48} className="rounded-xl" /></Link>
-          <CardTitle className="text-2xl">{t("auth.signupTitle")}</CardTitle>
+          <h1 className="text-2xl font-semibold">{t("auth.signupTitle")}</h1>
+          <CardTitle className="sr-only">{t("auth.signupTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-2">
