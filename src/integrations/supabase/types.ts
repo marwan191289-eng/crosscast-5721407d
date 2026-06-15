@@ -131,6 +131,7 @@ export type Database = {
           created_at: string
           display_name: string | null
           email: string | null
+          feed_token: string
           id: string
           phone: string | null
           status: Database["public"]["Enums"]["account_status"]
@@ -141,6 +142,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           email?: string | null
+          feed_token?: string
           id: string
           phone?: string | null
           status?: Database["public"]["Enums"]["account_status"]
@@ -151,6 +153,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           email?: string | null
+          feed_token?: string
           id?: string
           phone?: string | null
           status?: Database["public"]["Enums"]["account_status"]
