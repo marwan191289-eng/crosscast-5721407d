@@ -14,6 +14,7 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BlogRealEstateListingSyndicationGuideRouteImport } from './routes/blog.real-estate-listing-syndication-guide'
 import { Route as AuthenticatedPlatformsRouteImport } from './routes/_authenticated/platforms'
 import { Route as AuthenticatedListingsRouteImport } from './routes/_authenticated/listings'
 import { Route as AuthenticatedJobsRouteImport } from './routes/_authenticated/jobs'
@@ -48,6 +49,12 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlogRealEstateListingSyndicationGuideRoute =
+  BlogRealEstateListingSyndicationGuideRouteImport.update({
+    id: '/blog/real-estate-listing-syndication-guide',
+    path: '/blog/real-estate-listing-syndication-guide',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedPlatformsRoute = AuthenticatedPlatformsRouteImport.update({
   id: '/platforms',
   path: '/platforms',
@@ -108,6 +115,7 @@ export interface FileRoutesByFullPath {
   '/jobs': typeof AuthenticatedJobsRoute
   '/listings': typeof AuthenticatedListingsRoute
   '/platforms': typeof AuthenticatedPlatformsRoute
+  '/blog/real-estate-listing-syndication-guide': typeof BlogRealEstateListingSyndicationGuideRoute
   '/api/public/cron/process-jobs': typeof ApiPublicCronProcessJobsRoute
   '/api/public/feeds/$userId/bayut.xml': typeof ApiPublicFeedsUserIdBayutDotxmlRoute
   '/api/public/feeds/$userId/pf.xml': typeof ApiPublicFeedsUserIdPfDotxmlRoute
@@ -123,6 +131,7 @@ export interface FileRoutesByTo {
   '/jobs': typeof AuthenticatedJobsRoute
   '/listings': typeof AuthenticatedListingsRoute
   '/platforms': typeof AuthenticatedPlatformsRoute
+  '/blog/real-estate-listing-syndication-guide': typeof BlogRealEstateListingSyndicationGuideRoute
   '/api/public/cron/process-jobs': typeof ApiPublicCronProcessJobsRoute
   '/api/public/feeds/$userId/bayut.xml': typeof ApiPublicFeedsUserIdBayutDotxmlRoute
   '/api/public/feeds/$userId/pf.xml': typeof ApiPublicFeedsUserIdPfDotxmlRoute
@@ -140,6 +149,7 @@ export interface FileRoutesById {
   '/_authenticated/jobs': typeof AuthenticatedJobsRoute
   '/_authenticated/listings': typeof AuthenticatedListingsRoute
   '/_authenticated/platforms': typeof AuthenticatedPlatformsRoute
+  '/blog/real-estate-listing-syndication-guide': typeof BlogRealEstateListingSyndicationGuideRoute
   '/api/public/cron/process-jobs': typeof ApiPublicCronProcessJobsRoute
   '/api/public/feeds/$userId/bayut.xml': typeof ApiPublicFeedsUserIdBayutDotxmlRoute
   '/api/public/feeds/$userId/pf.xml': typeof ApiPublicFeedsUserIdPfDotxmlRoute
@@ -157,6 +167,7 @@ export interface FileRouteTypes {
     | '/jobs'
     | '/listings'
     | '/platforms'
+    | '/blog/real-estate-listing-syndication-guide'
     | '/api/public/cron/process-jobs'
     | '/api/public/feeds/$userId/bayut.xml'
     | '/api/public/feeds/$userId/pf.xml'
@@ -172,6 +183,7 @@ export interface FileRouteTypes {
     | '/jobs'
     | '/listings'
     | '/platforms'
+    | '/blog/real-estate-listing-syndication-guide'
     | '/api/public/cron/process-jobs'
     | '/api/public/feeds/$userId/bayut.xml'
     | '/api/public/feeds/$userId/pf.xml'
@@ -188,6 +200,7 @@ export interface FileRouteTypes {
     | '/_authenticated/jobs'
     | '/_authenticated/listings'
     | '/_authenticated/platforms'
+    | '/blog/real-estate-listing-syndication-guide'
     | '/api/public/cron/process-jobs'
     | '/api/public/feeds/$userId/bayut.xml'
     | '/api/public/feeds/$userId/pf.xml'
@@ -199,6 +212,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  BlogRealEstateListingSyndicationGuideRoute: typeof BlogRealEstateListingSyndicationGuideRoute
   ApiPublicCronProcessJobsRoute: typeof ApiPublicCronProcessJobsRoute
   ApiPublicFeedsUserIdBayutDotxmlRoute: typeof ApiPublicFeedsUserIdBayutDotxmlRoute
   ApiPublicFeedsUserIdPfDotxmlRoute: typeof ApiPublicFeedsUserIdPfDotxmlRoute
@@ -239,6 +253,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/real-estate-listing-syndication-guide': {
+      id: '/blog/real-estate-listing-syndication-guide'
+      path: '/blog/real-estate-listing-syndication-guide'
+      fullPath: '/blog/real-estate-listing-syndication-guide'
+      preLoaderRoute: typeof BlogRealEstateListingSyndicationGuideRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/platforms': {
@@ -335,6 +356,8 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  BlogRealEstateListingSyndicationGuideRoute:
+    BlogRealEstateListingSyndicationGuideRoute,
   ApiPublicCronProcessJobsRoute: ApiPublicCronProcessJobsRoute,
   ApiPublicFeedsUserIdBayutDotxmlRoute: ApiPublicFeedsUserIdBayutDotxmlRoute,
   ApiPublicFeedsUserIdPfDotxmlRoute: ApiPublicFeedsUserIdPfDotxmlRoute,
