@@ -12,7 +12,9 @@ export const Route = createFileRoute("/")({
     meta: [
       { name: "keywords", content: "cross posting, Bayut, Property Finder, Dubizzle, Facebook Marketplace, real estate UAE, listing automation" },
       { property: "og:image:alt", content: "CrossCast — publish listings to Facebook, Bayut, Property Finder, Dubizzle" },
+      { property: "og:url", content: "https://crosscast.lovable.app/" },
     ],
+    links: [{ rel: "canonical", href: "https://crosscast.lovable.app/" }],
     scripts: [
       {
         type: "application/ld+json",
