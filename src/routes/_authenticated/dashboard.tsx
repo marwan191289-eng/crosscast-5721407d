@@ -6,8 +6,22 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, Plug, Radio, CheckCircle2, XCircle } from "lucide-react";
 
+const PAGE_TITLE = "Dashboard — CrossCast";
+const PAGE_DESC = "Your CrossCast dashboard: listings, connected platforms, scheduled publish jobs and live success / failure stats.";
+const PAGE_URL = "https://crosscast.lovable.app/dashboard";
+
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "CrossCast" }] }),
+  head: () => ({
+    meta: [
+      { title: PAGE_TITLE },
+      { name: "description", content: PAGE_DESC },
+      { property: "og:title", content: PAGE_TITLE },
+      { property: "og:description", content: PAGE_DESC },
+      { property: "og:url", content: PAGE_URL },
+      { name: "robots", content: "noindex,nofollow" },
+    ],
+    links: [{ rel: "canonical", href: PAGE_URL }],
+  }),
   component: Dashboard,
 });
 
