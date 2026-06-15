@@ -12,8 +12,24 @@ import { useAuth } from "@/lib/auth";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import logo from "@/assets/logo.png";
 
+const PAGE_TITLE = "Sign in — CrossCast";
+const PAGE_DESC = "Sign in to your CrossCast account to publish real-estate listings to Facebook, Bayut, Property Finder and Dubizzle from one dashboard.";
+const PAGE_URL = "https://crosscast.lovable.app/login";
+
 export const Route = createFileRoute("/login")({
-  head: () => ({ meta: [{ title: "CrossCast" }] }),
+  head: () => ({
+    meta: [
+      { title: PAGE_TITLE },
+      { name: "description", content: PAGE_DESC },
+      { property: "og:title", content: PAGE_TITLE },
+      { property: "og:description", content: PAGE_DESC },
+      { property: "og:url", content: PAGE_URL },
+      { name: "twitter:title", content: PAGE_TITLE },
+      { name: "twitter:description", content: PAGE_DESC },
+      { name: "robots", content: "noindex,follow" },
+    ],
+    links: [{ rel: "canonical", href: PAGE_URL }],
+  }),
   component: LoginPage,
 });
 
